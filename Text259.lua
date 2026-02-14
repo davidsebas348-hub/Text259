@@ -1,5 +1,5 @@
 -- ======================
--- CLOWN MAN1 ESP (TOGGLE)
+-- CLOWN MAN1 ESP (TOGGLE 1 SEGUNDO)
 -- ======================
 
 if _G.CLOWN_ESP then
@@ -23,12 +23,7 @@ _G.CLOWN_ESP = true
 _G.CLOWN_ESP_DATA = {}
 print("CLOWN ESP: ON")
 
--- ======================
--- SERVICIOS
--- ======================
-local RunService = game:GetService("RunService")
 local humFolder = workspace:WaitForChild("Hum")
-
 local ESPs = _G.CLOWN_ESP_DATA
 
 -- ======================
@@ -91,27 +86,27 @@ local function removeESP(parentModel)
 end
 
 -- ======================
--- LOOP
+-- LOOP 1 SEGUNDO
 -- ======================
-RunService.RenderStepped:Connect(function()
+task.spawn(function()
+	while _G.CLOWN_ESP do
+		task.wait(1)
 
-	if not _G.CLOWN_ESP then return end
+		local activeModels = {}
 
-	local activeModels = {}
+		for _, obj in pairs(humFolder:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name == "Man1" then
+				if obj.Parent and obj.Parent.Name:match("Clown") then
+					activeModels[obj.Parent] = obj
+					createESP(obj)
+				end
+			end
+		end
 
-	for _, obj in pairs(humFolder:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == "Man1" then
-			if obj.Parent and obj.Parent.Name:match("Clown") then
-				activeModels[obj.Parent] = obj
-				createESP(obj)
+		for model,_ in pairs(ESPs) do
+			if not activeModels[model] then
+				removeESP(model)
 			end
 		end
 	end
-
-	for model,_ in pairs(ESPs) do
-		if not activeModels[model] then
-			removeESP(model)
-		end
-	end
-
 end)
